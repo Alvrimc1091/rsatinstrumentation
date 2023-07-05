@@ -20,4 +20,5 @@ Once you have made the connections and enabled the I2C interface, you should be 
 
 
 In orden to get data and transfer it to the csv, run the command:
+
     python3 bmp180.py
