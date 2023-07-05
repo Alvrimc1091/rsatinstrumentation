@@ -17,3 +17,7 @@ Additionally, ensure that the `i2c-dev` kernel module is enabled on your Raspber
 6. Reboot your Raspberry Pi for the changes to take effect.
 
 Once you have made the connections and enabled the I2C interface, you should be able to run the Python script to communicate with the BMP180 sensor on your Raspberry Pi 4.
+
+
+In orden to get data and transfer it to the csv, run the command:
+    python3 bmp180.py
