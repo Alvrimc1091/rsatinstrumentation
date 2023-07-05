@@ -1,73 +1,105 @@
+# make sure to install python-smbus using below command
+# sudo apt-get install python-smbus
 import smbus
 import time
+from ctypes import c_short
+ 
+DEVICE = 0x77 # Default device I2C address
+ 
+#bus = smbus.SMBus(0)  # Rev 1 Pi uses 0
+bus = smbus.SMBus(1) # Rev 2 Pi uses 1 
+ 
+def convertToString(data):
+  # Simple function to convert binary data into
+  # a string
+  return str((data[1] + (256 * data[0])) / 1.2)
 
-# BMP180 Registers
-BMP180_ADDR = 0x77
-BMP180_CTRL_MEAS = 0xF4
-BMP180_ADC_MSB = 0xF6
-BMP180_ADC_LSB = 0xF7
+def getShort(data, index):
+  # return two bytes from data as a signed 16-bit value
+  return c_short((data[index] << 8) + data[index + 1]).value
 
-# Calibration coefficients
-AC1 = 0xAA
-AC2 = 0xAC
-AC3 = 0xAE
-AC4 = 0xB0
-AC5 = 0xB2
-AC6 = 0xB4
-B1 = 0xB6
-B2 = 0xB8
-MB = 0xBA
-MC = 0xBC
-MD = 0xBE
+def getUshort(data, index):
+  # return two bytes from data as an unsigned 16-bit value
+  return (data[index] << 8) + data[index + 1]
 
-# Read a 16-bit signed value from the BMP180
-def read_short(address):
-    msb = bus.read_byte_data(BMP180_ADDR, address)
-    lsb = bus.read_byte_data(BMP180_ADDR, address + 1)
-    value = (msb << 8) + lsb
-    if value >= 0x8000:
-        value = -((65535 - value) + 1)
-    return value
+def readBmp180Id(addr=DEVICE):
+  # Chip ID Register Address
+  REG_ID     = 0xD0
+  (chip_id, chip_version) = bus.read_i2c_block_data(addr, REG_ID, 2)
+  return (chip_id, chip_version)
+  
+def readBmp180(addr=0x77):
+  # Register Addresses
+  REG_CALIB  = 0xAA
+  REG_MEAS   = 0xF4
+  REG_MSB    = 0xF6
+  REG_LSB    = 0xF7
+  # Control Register Address
+  CRV_TEMP   = 0x2E
+  CRV_PRES   = 0x34 
+  # Oversample setting
+  OVERSAMPLE = 3    # 0 - 3
+  
+  # Read calibration data
+  # Read calibration data from EEPROM
+  cal = bus.read_i2c_block_data(addr, REG_CALIB, 22)
 
-# Read the calibration coefficients from the BMP180
-def read_calibration():
-    calibration = {}
-    calibration['ac1'] = read_short(AC1)
-    calibration['ac2'] = read_short(AC2)
-    calibration['ac3'] = read_short(AC3)
-    calibration['ac4'] = read_short(AC4)
-    calibration['ac5'] = read_short(AC5)
-    calibration['ac6'] = read_short(AC6)
-    calibration['b1'] = read_short(B1)
-    calibration['b2'] = read_short(B2)
-    calibration['mb'] = read_short(MB)
-    calibration['mc'] = read_short(MC)
-    calibration['md'] = read_short(MD)
-    return calibration
+  # Convert byte data to word values
+  AC1 = getShort(cal, 0)
+  AC2 = getShort(cal, 2)
+  AC3 = getShort(cal, 4)
+  AC4 = getUshort(cal, 6)
+  AC5 = getUshort(cal, 8)
+  AC6 = getUshort(cal, 10)
+  B1  = getShort(cal, 12)
+  B2  = getShort(cal, 14)
+  MB  = getShort(cal, 16)
+  MC  = getShort(cal, 18)
+  MD  = getShort(cal, 20)
 
-# Read the uncompensated temperature from the BMP180
-def read_temperature():
-    bus.write_byte_data(BMP180_ADDR, BMP180_CTRL_MEAS, 0x2E)
-    time.sleep(0.005)
-    msb = bus.read_byte_data(BMP180_ADDR, BMP180_ADC_MSB)
-    lsb = bus.read_byte_data(BMP180_ADDR, BMP180_ADC_LSB)
-    value = (msb << 8) + lsb
-    return value
+  # Read temperature
+  bus.write_byte_data(addr, REG_MEAS, CRV_TEMP)
+  time.sleep(0.005)
+  (msb, lsb) = bus.read_i2c_block_data(addr, REG_MSB, 2)
+  UT = (msb << 8) + lsb
 
-# Read the uncompensated pressure from the BMP180
-def read_pressure(oss=0):
-    bus.write_byte_data(BMP180_ADDR, BMP180_CTRL_MEAS, 0x34 + (oss << 6))
-    time.sleep(0.014 + (0.008 * (1 << oss)))
-    msb = bus.read_byte_data(BMP180_ADDR, BMP180_ADC_MSB)
-    lsb = bus.read_byte_data(BMP180_ADDR, BMP180_ADC_LSB)
-    xlsb = bus.read_byte_data(BMP180_ADDR, BMP180_ADC_LSB + 1)
-    value = ((msb << 16) + (lsb << 8) + xlsb) >> (8 - oss)
-    return value
+  # Read pressure
+  bus.write_byte_data(addr, REG_MEAS, CRV_PRES + (OVERSAMPLE << 6))
+  time.sleep(0.04)
+  (msb, lsb, xsb) = bus.read_i2c_block_data(addr, REG_MSB, 3)
+  UP = ((msb << 16) + (lsb << 8) + xsb) >> (8 - OVERSAMPLE)
 
-# Calculate the true temperature from the uncompensated temperature value
-def calculate_temperature(ut, calibration):
-    x1 = ((ut - calibration['ac6']) * calibration['ac5']) >> 15
-    x2 = (calibration['mc'] << 11) // (x1 + calibration['md'])
-    b5 = x1 + x2
-    t = (b5 + 8) >> 4
-    return
+  # Refine temperature
+  X1 = ((UT - AC6) * AC5) >> 15
+  X2 = (MC << 11) / (X1 + MD)
+  B5 = X1 + X2
+  temperature = int(B5 + 8) >> 4
+  temperature = temperature / 10.0
+
+  # Refine pressure
+  B6  = B5 - 4000
+  B62 = int(B6 * B6) >> 12
+  X1  = (B2 * B62) >> 11
+  X2  = int(AC2 * B6) >> 11
+  X3  = X1 + X2
+  B3  = (((AC1 * 4 + X3) << OVERSAMPLE) + 2) >> 2
+
+  X1 = int(AC3 * B6) >> 13
+  X2 = (B1 * B62) >> 16
+  X3 = ((X1 + X2) + 2) >> 2
+  B4 = (AC4 * (X3 + 32768)) >> 15
+  B7 = (UP - B3) * (50000 >> OVERSAMPLE)
+
+  P = (B7 * 2) / B4
+
+  X1 = (int(P) >> 8) * (int(P) >> 8)
+  X1 = (X1 * 3038) >> 16
+  X2 = int(-7357 * P) >> 16
+  pressure = int(P + ((X1 + X2 + 3791) >> 4))
+  #pressure = float(pressure / 100.0)
+  
+  
+  altitude = 44330.0 * (1.0 - pow(pressure / 101325.0, (1.0/5.255)))
+  altitude = round(altitude,2)
+
+  return (temperature,pressure,altitude)
