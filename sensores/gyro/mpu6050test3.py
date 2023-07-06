@@ -199,9 +199,7 @@ def gyro():
     x = readMPU(GYRO_X)
     y = readMPU(GYRO_Y)
     z = readMPU(GYRO_Z)
-    Gx = x / 131Aquí tienes el código corregido:
-
-```python
+    Gx = x / 131
     GxCal
     Gy = y / 131.0 - GyCal
     Gz = z / 131.0 - GzCal
