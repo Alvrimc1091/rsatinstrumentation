@@ -276,17 +276,17 @@ def setCursor(x,y):
 
 def InitMPU():
 
-bus.write_byte_data(Device_Address, DIV, 7)
+  bus.write_byte_data(Device_Address, DIV, 7)
 
-bus.write_byte_data(Device_Address, PWR_M, 1)
+  bus.write_byte_data(Device_Address, PWR_M, 1)
 
-bus.write_byte_data(Device_Address, CONFIG, 0)
+  bus.write_byte_data(Device_Address, CONFIG, 0)
 
-bus.write_byte_data(Device_Address, GYRO_CONFIG, 24)
+  bus.write_byte_data(Device_Address, GYRO_CONFIG, 24)
 
-bus.write_byte_data(Device_Address, INT_EN, 1)
+  bus.write_byte_data(Device_Address, INT_EN, 1)
 
-time.sleep(1)
+  time.sleep(1)
 
  
 
@@ -340,17 +340,17 @@ def display(x,y,z):
 
 def readMPU(addr):
 
-high = bus.read_byte_data(Device_Address, addr)
+  high = bus.read_byte_data(Device_Address, addr)
 
-low = bus.read_byte_data(Device_Address, addr+1)
+  low = bus.read_byte_data(Device_Address, addr+1)
 
-value = ((high << 8) | low)
+  value = ((high << 8) | low)
 
-if(value > 32768):
+  if(value > 32768):
 
-value = value - 65536
+    value = value - 65536
 
-return value
+   return value
 
 def accel():
 
