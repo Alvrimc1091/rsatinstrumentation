@@ -50,11 +50,41 @@ Device_Address = 0x68   # MPU6050 device address
 
 MPU_Init()
 
-print (" Reading Data of Gyroscope and Accelerometer")
+# print (" Reading Data of Gyroscope and Accelerometer")
 
-while True:
+# while True:
 	
-	#Read Accelerometer raw value
+	# #Read Accelerometer raw value
+	# acc_x = read_raw_data(ACCEL_XOUT_H)
+	# acc_y = read_raw_data(ACCEL_YOUT_H)
+	# acc_z = read_raw_data(ACCEL_ZOUT_H)
+	
+	# #Read Gyroscope raw value
+	# gyro_x = read_raw_data(GYRO_XOUT_H)
+	# gyro_y = read_raw_data(GYRO_YOUT_H)
+	# gyro_z = read_raw_data(GYRO_ZOUT_H)
+	
+	# #Full scale range +/- 250 degree/C as per sensitivity scale factor
+	# Ax = acc_x/16384.0
+	# Ay = acc_y/16384.0
+	# Az = acc_z/16384.0
+	
+	# Gx = gyro_x/131.0
+	# Gy = gyro_y/131.0
+	# Gz = gyro_z/131.0
+	
+	
+	# print ("Gx=%.2f" %Gx, u'\u00b0'+ "/s", "\tGy=%.2f" %Gy, u'\u00b0'+ "/s", "\tGz=%.2f" %Gz, u'\u00b0'+ "/s", "\tAx=%.2f g" %Ax, "\tAy=%.2f g" %Ay, "\tAz=%.2f g" %Az) 	
+	# sleep(1)
+nombre_archivo = 'data_mpu6050.csv'
+
+# Ciclo de captura y escritura de datos
+with open(nombre_archivo, 'w', newline='') as archivo_csv:
+    escritor_csv = csv.writer(archivo_csv)
+    escritor_csv.writerow(['Gx[°/s]', 'Gy[°/s]', 'Gz[°/s]','Ax[g]', 'Ay[g]', 'Az[g]' ])  # Escribir encabezados de columna
+
+    while True:
+        #Read Accelerometer raw value
 	acc_x = read_raw_data(ACCEL_XOUT_H)
 	acc_y = read_raw_data(ACCEL_YOUT_H)
 	acc_z = read_raw_data(ACCEL_ZOUT_H)
@@ -73,6 +103,7 @@ while True:
 	Gy = gyro_y/131.0
 	Gz = gyro_z/131.0
 	
+        escritor_csv.writerow([Gx, Gy, Gz,Ax, Ay, Az ])
+        archivo_csv.flush()  # Vaciar el búfer y asegurarse de que se escriban los datos en el archivo
 
-	print ("Gx=%.2f" %Gx, u'\u00b0'+ "/s", "\tGy=%.2f" %Gy, u'\u00b0'+ "/s", "\tGz=%.2f" %Gz, u'\u00b0'+ "/s", "\tAx=%.2f g" %Ax, "\tAy=%.2f g" %Ay, "\tAz=%.2f g" %Az) 	
-	sleep(1)
+        time.sleep(1)  # Esperar 1 segundo antes de la siguiente captura
