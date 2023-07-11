@@ -45,6 +45,22 @@ def read_temperature_humidity():
 initialize_sensor()
 
 # Read and display temperature and humidity
-temperature, humidity = read_temperature_humidity()
-print("Temperature: {:.2f}°C".format(temperature))
-print("Humidity: {:.2f}%".format(humidity))
+# temperature, humidity = read_temperature_humidity()
+# print("Temperature: {:.2f}°C".format(temperature))
+# print("Humidity: {:.2f}%".format(humidity))
+
+# Nombre del archivo CSV
+nombre_archivo = 'data_aht10.csv'
+
+# Ciclo de captura y escritura de datos
+with open(nombre_archivo, 'w', newline='') as archivo_csv:
+    escritor_csv = csv.writer(archivo_csv)
+    escritor_csv.writerow(['Temperature', 'Humidity'])  # Escribir encabezados de columna
+
+    while True:
+        temperature, humidity = read_temperature_humidity()
+
+        escritor_csv.writerow([temperature, humidity])
+        archivo_csv.flush()  # Vaciar el búfer y asegurarse de que se escriban los datos en el archivo
+
+        time.sleep(1)  # Esperar 1 segundo antes de la siguiente captura
