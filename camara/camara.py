@@ -1,9 +1,11 @@
-from time import sleep
-from picamera import PiCamera
 
-camera = PiCamera()
-camera.resolution = (1024, 768)
-camera.start_preview()
+import cv2
 
-sleep(2)
-camera.capture('test_photo.jpg')
+cap = cv2.VideoCapture(0)
+
+# Capture frame
+ret, frame = cap.read()
+if ret:
+	cv2.imwrite('image.jpg', frame)
+
+cap.release()
