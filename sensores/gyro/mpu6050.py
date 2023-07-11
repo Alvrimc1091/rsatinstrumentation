@@ -1,5 +1,6 @@
 import smbus					#import SMBus module of I2C
 from time import sleep          #import
+import csv
 
 #some MPU6050 Registers and their Address
 PWR_MGMT_1   = 0x6B
