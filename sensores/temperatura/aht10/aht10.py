@@ -1,5 +1,6 @@
 import smbus2
 import time
+import csv
 
 # AHT10 Registers
 AHT10_ADDR = 0x38
