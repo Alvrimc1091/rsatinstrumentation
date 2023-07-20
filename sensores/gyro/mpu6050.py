@@ -1,6 +1,8 @@
 import smbus					#import SMBus module of I2C
 import time         #import
 import csv
+import datetime
+import pytz
 
 #some MPU6050 Registers and their Address
 PWR_MGMT_1   = 0x6B
@@ -103,8 +105,10 @@ with open(nombre_archivo, 'w', newline='') as archivo_csv:
 	    Gx = gyro_x/131.0
 	    Gy = gyro_y/131.0
 	    Gz = gyro_z/131.0
+	    
+            hora_actual = datetime.datetime.now(tz=zona_horaria_utc).strftime('%H%M%S')
 		
-	    escritor_csv.writerow([Gx, Gy, Gz,Ax, Ay, Az ])
+	    escritor_csv.writerow([hora_actual, Gx, Gy, Gz,Ax, Ay, Az ])
 	    archivo_csv.flush()  # Vaciar el búfer y asegurarse de que se escriban los datos en el archivo
 	
 	    time.sleep(1)  # Esperar 1 segundo antes de la siguiente captura
