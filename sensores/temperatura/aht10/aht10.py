@@ -1,6 +1,8 @@
 import smbus2
 import time
 import csv
+import datetime
+import pytz
 
 # AHT10 Registers
 AHT10_ADDR = 0x38
@@ -56,12 +58,13 @@ nombre_archivo = 'data_aht10.csv'
 # Ciclo de captura y escritura de datos
 with open(nombre_archivo, 'w', newline='') as archivo_csv:
     escritor_csv = csv.writer(archivo_csv)
-    escritor_csv.writerow(['Temperature', 'Humidity'])  # Escribir encabezados de columna
+    escritor_csv.writerow(['Hora_UTC','Temperature', 'Humidity'])  # Escribir encabezados de columna
 
     while True:
         temperature, humidity = read_temperature_humidity()
+        hora_actual = datetime.datetime.now(tz=zona_horaria_utc).strftime('%H%M%S')
 
-        escritor_csv.writerow([temperature, humidity])
+        escritor_csv.writerow([hora_actual, temperature, humidity])
         archivo_csv.flush()  # Vaciar el búfer y asegurarse de que se escriban los datos en el archivo
 
         time.sleep(1)  # Esperar 1 segundo antes de la siguiente captura
