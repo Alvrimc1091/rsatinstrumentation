@@ -4,6 +4,7 @@ import csv
 import datetime
 import pytz
 
+zona_horaria_utc = pytz.utc
 # AHT10 Registers
 AHT10_ADDR = 0x38
 AHT10_CMD_INIT = 0xE1
