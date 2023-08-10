@@ -56,21 +56,16 @@ initialize_sensor()
 # Nombre del archivo CSV
 nombre_archivo = 'data_aht10-new.csv'
 
-# Initialize the sensor
-initialize_sensor()
-
 # Ciclo de captura y escritura de datos
 with open(nombre_archivo, 'w', newline='') as archivo_csv:
     escritor_csv = csv.writer(archivo_csv)
-    escritor_csv.writerow(['Hora_UTC', 'Temperature', 'Humidity'])  # Escribir encabezados de columna
+    escritor_csv.writerow(['Hora_UTC','Temperature', 'Humidity'])  # Escribir encabezados de columna
 
     while True:
         temperature, humidity = read_temperature_humidity()
         hora_actual = datetime.datetime.now(tz=zona_horaria_utc).strftime('%H%M%S')
-    
-        print("Temperature: {:.2f}°C, Humidity: {:.2f}%".format(temperature, humidity))
-    
+
         escritor_csv.writerow([hora_actual, temperature, humidity])
-        archivo_csv.flush()
-    
-        time.sleep(1)
+        archivo_csv.flush()  # Vaciar el búfer y asegurarse de que se escriban los datos en el archivo
+
+        time.sleep(1)  # Esperar 1 segundo antes de la siguiente captura
