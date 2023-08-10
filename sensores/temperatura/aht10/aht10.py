@@ -65,11 +65,12 @@ with open(nombre_archivo, 'w', newline='') as archivo_csv:
     escritor_csv.writerow(['Hora_UTC', 'Temperature', 'Humidity'])  # Escribir encabezados de columna
 
     while True:
-        # Read temperature and humidity within the loop
         temperature, humidity = read_temperature_humidity()
         hora_actual = datetime.datetime.now(tz=zona_horaria_utc).strftime('%H%M%S')
-
+    
+        print("Temperature: {:.2f}°C, Humidity: {:.2f}%".format(temperature, humidity))
+    
         escritor_csv.writerow([hora_actual, temperature, humidity])
-        archivo_csv.flush()  # Vaciar el búfer y asegurarse de que se escriban los datos en el archivo
-
-        time.sleep(1)  # Esperar 1 segundo antes de la siguiente captura
+        archivo_csv.flush()
+    
+        time.sleep(1)
