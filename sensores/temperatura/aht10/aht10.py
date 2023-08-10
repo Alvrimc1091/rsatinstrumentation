@@ -54,7 +54,7 @@ initialize_sensor()
 # print("Humidity: {:.2f}%".format(humidity))
 
 # Nombre del archivo CSV
-nombre_archivo = 'data_aht10.csv'
+nombre_archivo = 'data_aht10-new.csv'
 
 # Ciclo de captura y escritura de datos
 with open(nombre_archivo, 'w', newline='') as archivo_csv:
